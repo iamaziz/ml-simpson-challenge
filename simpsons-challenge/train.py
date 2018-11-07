@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten
+from keras.layers import Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Activation
 from keras.preprocessing.image import ImageDataGenerator
 from keras import optimizers
 import subprocess
@@ -13,7 +13,7 @@ config = run.config
 config.img_size = 100
 config.batch_size = 64
 config.epochs = 25
-config.team = None
+config.team = 'aziz'
 
 if config.team is None:
     raise ValueError("You must set config.team on line 16!")
@@ -26,7 +26,14 @@ if not os.path.exists("simpsons"):
 # this is the augmentation configuration we will use for training
 # see: https://keras.io/preprocessing/image/#imagedatagenerator-class
 train_datagen = ImageDataGenerator(
-    rescale=1./255)
+            rotation_range=20,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
+            rescale=1./255,
+            shear_range=0.2,
+            zoom_range=0.2,
+            horizontal_flip=True,
+            fill_mode='nearest')
 
 # only rescaling augmentation for testing:
 test_datagen = ImageDataGenerator(rescale=1./255)
@@ -50,6 +57,17 @@ labels = list(test_generator.class_indices.keys())
 model = Sequential()
 model.add(Conv2D(16, (3,3), input_shape=(config.img_size, config.img_size, 3), activation="relu"))
 model.add(MaxPooling2D())
+
+
+model.add(Conv2D(32, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+model.add(Conv2D(64, (3, 3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+
+
 model.add(Flatten())
 model.add(Dropout(0.4))
 model.add(Dense(13, activation="softmax"))
